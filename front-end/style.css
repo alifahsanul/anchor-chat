@@ -1,28 +1,32 @@
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-}
-
 .input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     margin-bottom: 20px;
 }
 
+.url-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.question-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 #urlInput, #questionInput {
-    width: 60%;
-    padding: 10px;
-    margin: 5px 0;
+    width: 400px;
+    padding: 8px;
+    font-size: 14px;
 }
 
-#submitButton, #loginButton {
-    padding: 10px 20px;
-    margin-top: 10px;
+#summarizeButton, #submitButton {
+    width: 150px; /* 🆕 Set fixed width */
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
 }
 
-#chatArea {
-    border: 1px solid #ccc;
-    padding: 10px;
-    height: 400px;
-    overflow-y: scroll;
-    background-color: #f9f9f9;
-    margin-top: 20px;
-}

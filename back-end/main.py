@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+from routers.api import router as api_router
 
 load_dotenv()
 
 app = FastAPI()
+app.include_router(api_router)
 
 # CORS middleware
 app.add_middleware(
