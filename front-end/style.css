@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.input-section {
+    margin-bottom: 20px;
+}
+
+#urlInput, #questionInput {
+    width: 60%;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+#submitButton, #loginButton {
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+#chatArea {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 400px;
+    overflow-y: scroll;
+    background-color: #f9f9f9;
+    margin-top: 20px;
+}
