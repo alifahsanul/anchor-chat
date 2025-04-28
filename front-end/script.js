@@ -4,7 +4,7 @@ document.getElementById('loginButton').addEventListener('click', async function(
     const password = document.getElementById('passwordInput').value;
 
     try {
-        const response = await fetch('anchor-chat-production.up.railway.app/login', {
+        const response = await fetch('https://anchor-chat-production.up.railway.app/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: password })
@@ -38,7 +38,7 @@ document.getElementById('submitButton').addEventListener('click', async function
     chatArea.innerHTML += userMessage;
 
     try {
-        const response = await fetch('anchor-chat.railway.internalanchor-chat-production.up.railway.app/chat', {
+        const response = await fetch('https://anchor-chat-production.up.railway.app/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
