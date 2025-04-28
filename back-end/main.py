@@ -4,15 +4,11 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from parent folder
 load_dotenv()
-
-CORRECT_PASSWORD = os.getenv("CORRECT_PASSWORD")
-FAKE_TOKEN = os.getenv("FAKE_TOKEN")
 
 app = FastAPI()
 
-# Allow frontend to call backend
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,12 +17,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load secrets
+CORRECT_PASSWORD = os.getenv("CORRECT_PASSWORD")
+FAKE_TOKEN = os.getenv("FAKE_TOKEN")
+
 class LoginRequest(BaseModel):
     password: str
 
 class ChatRequest(BaseModel):
     url: str
     question: str
+
+@app.get("/")
+async def root():
+    return {"message": "AnchorChat API is running"}
 
 @app.post("/login")
 async def login(request: LoginRequest):
@@ -46,3 +50,9 @@ async def chat(request: Request):
     question = body.get("question")
 
     return {"answer": f"Pretend I'm answering your question about {url}."}
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 8000))  # Read from env, default to 8000
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
