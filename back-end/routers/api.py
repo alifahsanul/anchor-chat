@@ -55,7 +55,6 @@ async def login(request: LoginRequest):
 @router.post("/summarize-url")
 @limiter.limit("10/minute")
 async def summarize_url(request: Request, payload: URLRequest, authorization: str = Header(...)):
-    print('1', payload.url)
     token = authorization.replace("Bearer ", "")
     if token not in active_tokens:
         return JSONResponse(
@@ -67,7 +66,6 @@ async def summarize_url(request: Request, payload: URLRequest, authorization: st
                 }
             }
         )
-    print('2')
     if validators.url(payload.url) == True:
         html = await fetch_url_content(payload.url)
         text = parse_html(html)
