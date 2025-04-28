@@ -1,20 +1,85 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Header
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from utils.fetcher import fetch_url_content
 from utils.parser import parse_html
 from utils.summarizer import summarize_text
+import secrets
+import os
+from dotenv import load_dotenv
+from fastapi import Request
+from utils.limiter import limiter
+import validators
+
+
+
+# Load environment variables
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(dotenv_path=env_path)
 
 # Create router
 router = APIRouter()
 
-# Define request body schema
+# In-memory store for active session tokens
+active_tokens = set()
+
+# Load real password from .env
+REAL_PASSWORD = os.getenv("ANCHORCHAT_PASSWORD")
+if REAL_PASSWORD is None:
+    raise Exception("ANCHORCHAT_PASSWORD not found in environment variables!")
+
+# --- Models ---
 class URLRequest(BaseModel):
     url: str
 
-# Define endpoint
+class LoginRequest(BaseModel):
+    password: str
+
+# --- Endpoints ---
+@router.get("/")
+async def root():
+    return {"message": "API is alive"}
+
+@router.post("/login")
+async def login(request: LoginRequest):
+    if request.password == REAL_PASSWORD:
+        token = secrets.token_hex(32)  # Generate a secure random token
+        active_tokens.add(token)       # Save it as active
+        return {"token": token}
+    else:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect password"
+        )
+
 @router.post("/summarize-url")
-async def summarize_url(request: URLRequest):
-    html = await fetch_url_content(request.url)
-    text = parse_html(html)
-    summary = await summarize_text(text[:1000])  # Limit to avoid OpenAI token limits
-    return {"summary": summary}
+@limiter.limit("10/minute")
+async def summarize_url(request: Request, payload: URLRequest, authorization: str = Header(...)):
+    print('1', payload.url)
+    token = authorization.replace("Bearer ", "")
+    if token not in active_tokens:
+        return JSONResponse(
+            status_code=401,
+            content={
+                "error": {
+                    "code": 401,
+                    "message": "Unauthorized access. Please login again."
+                }
+            }
+        )
+    print('2')
+    if validators.url(payload.url) == True:
+        html = await fetch_url_content(payload.url)
+        text = parse_html(html)
+        summary = await summarize_text(text[:4000])  # Limit input length
+        return {"summary": summary}
+    else:
+        return {"summary": "Invalid URL"}
+
+    
+
+@router.post("/logout")
+async def logout(authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    active_tokens.discard(token)  # Remove token if exists
+    return {"message": "Logged out successfully"}

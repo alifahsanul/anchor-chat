@@ -30,3 +30,17 @@
     cursor: pointer;
 }
 
+.summary-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 12px;
+    margin-top: 10px;
+    width: 700px; /* or whatever width you want */
+    max-width: 100%; /* so it's responsive */
+    overflow-wrap: break-word; /* break long words nicely */
+    word-wrap: break-word;
+    white-space: pre-wrap; /* keep new lines but allow wrapping */
+    border-radius: 8px; /* optional rounded corners */
+    font-size: 14px;
+}
+

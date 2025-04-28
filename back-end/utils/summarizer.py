@@ -17,3 +17,5 @@ async def summarize_text(text: str) -> str:
     print(response)
     
     return response.choices[0].message.content.strip()
+
+

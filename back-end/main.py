@@ -1,19 +1,29 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from routers.api import router as api_router
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from utils.limiter import limiter
+
 
 load_dotenv()
 
+# Initialize FastAPI app
 app = FastAPI()
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Include the API router
 app.include_router(api_router)
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all for dev (can restrict later)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,26 +40,5 @@ class ChatRequest(BaseModel):
     url: str
     question: str
 
-@app.get("/")
-async def root():
-    return {"message": "AnchorChat API is running"}
 
-@app.post("/login")
-async def login(request: LoginRequest):
-    if request.password == CORRECT_PASSWORD:
-        return {"token": FAKE_TOKEN}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid password.")
-
-@app.post("/chat")
-async def chat(request: Request):
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or auth_header != f"Bearer {FAKE_TOKEN}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    body = await request.json()
-    url = body.get("url")
-    question = body.get("question")
-
-    return {"answer": f"Pretend I'm answering your question about {url}."}
 

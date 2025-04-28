@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AnchorChat Redirecting...</title>
+    <script>
+        // Immediately check login status
+        if (localStorage.getItem('loggedIn') === 'true') {
+            window.location.href = "chat.html"; // Already logged in -> go to chat
+        } else {
+            window.location.href = "login.html"; // Not logged in -> go to login
+        }
+    </script>
+</head>
+<body>
+    Redirecting...
+</body>
+</html>
