@@ -6,6 +6,8 @@ const backendURL = config.backendURL;
 function logoutUser() {
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('token');
+    localStorage.removeItem('chatHistory');
+    localStorage.removeItem('currentUrl');
     window.location.href = "login.html";
 }
 
@@ -53,12 +55,34 @@ function isValidURL(string) {
     }
 }
 
-// Store chat history
-let chatHistory = [];
-let currentUrl = '';
+// Initialize chat history from localStorage or empty array
+let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+let currentUrl = localStorage.getItem('currentUrl') || '';
 
-// Function to add message to chat
-function addMessage(content, isUser = false) {
+// Function to save chat state
+function saveChatState() {
+    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+    localStorage.setItem('currentUrl', currentUrl);
+}
+
+// Function to restore chat UI from history
+function restoreChatUI() {
+    const chatArea = document.getElementById('chatArea');
+    chatArea.innerHTML = ''; // Clear existing messages
+    
+    // Restore URL if exists
+    if (currentUrl) {
+        document.getElementById('urlInput').value = currentUrl;
+    }
+    
+    // Restore all messages
+    chatHistory.forEach(msg => {
+        addMessage(msg.content, msg.role === 'user', false); // false means don't save to history
+    });
+}
+
+// Modified addMessage function
+function addMessage(content, isUser = false, shouldSave = true) {
     const message = document.createElement('div');
     message.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
     
@@ -69,11 +93,14 @@ function addMessage(content, isUser = false) {
     chatArea.appendChild(message);
     chatArea.scrollTop = chatArea.scrollHeight;
     
-    // Add to chat history
-    chatHistory.push({
-        role: isUser ? 'user' : 'assistant',
-        content: content
-    });
+    // Add to chat history only if it's a new message
+    if (shouldSave) {
+        chatHistory.push({
+            role: isUser ? 'user' : 'assistant',
+            content: content
+        });
+        saveChatState();
+    }
 }
 
 // Update the summarize button handler
@@ -105,10 +132,11 @@ if (document.getElementById('summarizeButton')) {
             }
 
             const data = await response.json();
-            addMessage(`Summary: ${data.summary}`, false);
             
             // Clear chat history when new URL is summarized
             chatHistory = [];
+            addMessage(`Summary: ${data.summary}`, false);
+            saveChatState();
             
         } catch (error) {
             console.error("Error:", error);
@@ -204,3 +232,22 @@ if (document.getElementById('logoutButton')) {
         logoutUser();
     });
 }
+
+// Add clear chat button
+const clearButton = document.createElement('button');
+clearButton.textContent = 'Clear Chat';
+clearButton.style.marginLeft = '10px';
+document.querySelector('.url-section').appendChild(clearButton);
+
+clearButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        chatHistory = [];
+        currentUrl = '';
+        document.getElementById('urlInput').value = '';
+        document.getElementById('chatArea').innerHTML = '';
+        saveChatState();
+    }
+});
+
+// Restore chat on page load
+window.addEventListener('load', restoreChatUI);

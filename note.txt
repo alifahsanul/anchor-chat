@@ -2,7 +2,9 @@ frontend deployment: https://anchor-chat.vercel.app/
 backend: railway
 
 Step to run locally:
-- Make sure  to change js backend to http://127.0.0.1:8000
+Terminal 1:
 - Activate venv
 - Cd to back-end, run this `uvicorn main:app --host 127.0.0.1 --port 8000 --reload`
-- Go to front-end, open the html file
+Terminal 2:
+- Go to front-end, run python -m http.server 8080
+- Open localhost:8080
