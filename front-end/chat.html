@@ -20,13 +20,18 @@
                 <button id="summarizeButton">Summarize URL</button>
             </div>
 
-            <!-- <div class="question-section">
-                <input type="text" id="questionInput" placeholder="Type your question here">
-                <button id="submitButton">Send Question</button>
-            </div> -->
+            <div class="chat-container">
+                <div id="chatArea" class="chat-messages"></div>
+                <div class="chat-input-area">
+                    <textarea 
+                        id="questionInput" 
+                        placeholder="Ask a question about the content... (Shift+Enter for new line, Enter to send)"
+                        rows="1"
+                    ></textarea>
+                    <button id="submitButton">Send</button>
+                </div>
+            </div>
         </div>
-
-        <div id="chatArea"></div>
     </div>
 
     <script src="js/chat.js"></script>

@@ -53,21 +53,42 @@ function isValidURL(string) {
     }
 }
 
-// Handle Summarize Button
+// Store chat history
+let chatHistory = [];
+let currentUrl = '';
+
+// Function to add message to chat
+function addMessage(content, isUser = false) {
+    const message = document.createElement('div');
+    message.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+    
+    // Replace newlines with <br> tags for proper display
+    message.innerHTML = content.replace(/\n/g, '<br>');
+    
+    const chatArea = document.getElementById('chatArea');
+    chatArea.appendChild(message);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    
+    // Add to chat history
+    chatHistory.push({
+        role: isUser ? 'user' : 'assistant',
+        content: content
+    });
+}
+
+// Update the summarize button handler
 if (document.getElementById('summarizeButton')) {
     document.getElementById('summarizeButton').addEventListener('click', async function () {
-        const chatArea = document.getElementById('chatArea');
-        chatArea.innerHTML = ""; // clear old content
         const url = document.getElementById('urlInput').value;
-
+        currentUrl = url;  // Store current URL
+        
         if (!isValidURL(url)) {
-            chatArea.innerHTML = `<div style="color: red;"><strong>Error:</strong> Please enter a valid URL.</div>`;
+            addMessage('Please enter a valid URL.', false);
             return;
         }
 
         try {
             const token = localStorage.getItem('token');
-
             const response = await fetch(`${backendURL}/summarize-url`, {
                 method: 'POST',
                 headers: {
@@ -78,35 +99,102 @@ if (document.getElementById('summarizeButton')) {
             });
 
             if (response.status === 401) {
-                // Unauthorized, force logout
                 alert("Session expired. Please login again.");
                 logoutUser();
                 return;
             }
 
             const data = await response.json();
-
-            chatArea.innerHTML = `
-                <div><strong>Summary:</strong></div>
-                <div class="summary-box">${data.summary || "Error or no summary returned."}</div>
-            `;
+            addMessage(`Summary: ${data.summary}`, false);
+            
+            // Clear chat history when new URL is summarized
+            chatHistory = [];
+            
         } catch (error) {
             console.error("Error:", error);
-            chatArea.innerHTML = `<div style="color: red;"><strong>Error:</strong> Failed to summarize the URL.</div>`;
+            addMessage('Failed to summarize the URL.', false);
         }
     });
 }
 
-// Handle Send Question Button (future feature)
-if (document.getElementById('submitButton')) {
-    document.getElementById('submitButton').addEventListener('click', function () {
-        const question = document.getElementById('questionInput').value;
-        const chatArea = document.getElementById('chatArea');
+// Add this function to auto-resize textarea
+function autoResizeTextarea(textarea) {
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    
+    // Set new height based on scrollHeight
+    const newHeight = Math.min(textarea.scrollHeight, 150); // Max height of 150px
+    textarea.style.height = `${newHeight}px`;
+}
 
-        chatArea.innerHTML += `
-            <div><strong>You:</strong> ${question}</div>
-            <div><em>(Question feature coming soon...)</em></div>
-        `;
+// Update the event listeners for the chat input
+if (document.getElementById('submitButton')) {
+    const questionInput = document.getElementById('questionInput');
+    
+    // Auto-resize on input
+    questionInput.addEventListener('input', function() {
+        autoResizeTextarea(this);
+    });
+
+    // Handle key events
+    questionInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            if (e.shiftKey) {
+                // Shift+Enter: add new line
+                return; // Let the default behavior happen
+            } else {
+                // Enter only: send message
+                e.preventDefault(); // Prevent new line
+                if (this.value.trim()) {
+                    document.getElementById('submitButton').click();
+                }
+            }
+        }
+    });
+
+    // Update the submit button handler
+    document.getElementById('submitButton').addEventListener('click', async function () {
+        const question = questionInput.value.trim();
+        
+        if (!question) return;
+        
+        addMessage(question, true);
+        questionInput.value = '';
+        // Reset textarea height
+        questionInput.style.height = 'auto';
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${backendURL}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    url: currentUrl,
+                    question: question,
+                    chat_history: chatHistory
+                })
+            });
+
+            if (response.status === 401) {
+                alert("Session expired. Please login again.");
+                logoutUser();
+                return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                addMessage(data.error.message, false);
+            } else {
+                addMessage(data.response, false);
+            }
+            
+        } catch (error) {
+            console.error("Error:", error);
+            addMessage('Failed to get response. Please try again.', false);
+        }
     });
 }
 
