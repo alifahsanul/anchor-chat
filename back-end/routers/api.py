@@ -66,14 +66,22 @@ async def summarize_url(request: Request, payload: URLRequest, authorization: st
                 }
             }
         )
-    if validators.url(payload.url) == True:
-        html = await fetch_url_content(payload.url)
-        text = parse_html(html)
-        summary = await summarize_text(text[:4000])  # Limit input length
-        return {"summary": summary}
-    else:
+    try:
+        raw_url = payload.url
+        url = raw_url.strip()
+        if not url.startswith(("http://", "https://")):
+            url = f"http://{url}"
+        if validators.url(url) == True:
+            html = await fetch_url_content(url)
+            text = parse_html(html)
+            summary = await summarize_text(text[:5000])  # Limit input length
+            return {"summary": summary}
+        else:
+            return {"summary": "Invalid URL"}
+    except:
         return {"summary": "Invalid URL"}
-
+    
+    
     
 
 @router.post("/logout")
