@@ -68,9 +68,11 @@ async def summarize_url(request: Request, payload: URLRequest, authorization: st
         )
     try:
         raw_url = payload.url
+        print('raw_url:', raw_url)
         url = raw_url.strip()
         if not url.startswith(("http://", "https://")):
             url = f"http://{url}"
+        print('url:', url)
         if validators.url(url) == True:
             html = await fetch_url_content(url)
             text = parse_html(html)
@@ -78,7 +80,8 @@ async def summarize_url(request: Request, payload: URLRequest, authorization: st
             return {"summary": summary}
         else:
             return {"summary": "Invalid URL"}
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         return {"summary": "Invalid URL"}
     
     
