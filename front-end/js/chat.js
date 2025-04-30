@@ -1,5 +1,5 @@
-const backendURL = 'https://anchor-chat-production.up.railway.app';
-// const backendURL = 'http://127.0.0.1:8000';
+import config from './config.js';
+const backendURL = config.backendURL;
 
 
 // --- Helper function to logout ---
