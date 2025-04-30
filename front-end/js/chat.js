@@ -45,7 +45,8 @@ if (localStorage.getItem('loggedIn') !== 'true') {
 // Validate if string is a valid URL
 function isValidURL(string) {
     try {
-        new URL(string);
+        // Add a default scheme if missing
+        const url = new URL(string.includes('://') ? string : `http://${string}`);
         return true;
     } catch (_) {
         return false;
