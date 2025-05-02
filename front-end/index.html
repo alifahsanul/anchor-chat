@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AnchorChat Redirecting...</title>
-    <script>
+</head>
+<body>
+    Redirecting...
+    <script type="module">
+        import { setupHeader } from './js/components/header.js';
+        setupHeader('Redirecting...');
+        
         // Immediately check login status
         if (localStorage.getItem('loggedIn') === 'true') {
             window.location.href = "chat.html"; // Already logged in -> go to chat
@@ -11,8 +16,5 @@
             window.location.href = "login.html"; // Not logged in -> go to login
         }
     </script>
-</head>
-<body>
-    Redirecting...
 </body>
 </html>

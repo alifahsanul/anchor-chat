@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AnchorChat - Login</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <h1>AnchorChat</h1>
 
     <div id="loginSection">
@@ -15,6 +13,10 @@
         <div id="loginError" style="color: red; margin-top: 10px;"></div>
     </div>
 
+    <script type="module">
+        import { setupHeader } from './js/components/header.js';
+        setupHeader('Login');
+    </script>
     <script type="module" src="js/login.js"></script>
 </body>
 </html>
