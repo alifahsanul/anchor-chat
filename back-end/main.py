@@ -20,18 +20,26 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Include the API router
 app.include_router(api_router)
 
-# CORS middleware
+# Load secrets
+CORRECT_PASSWORD = os.getenv("CORRECT_PASSWORD")
+FAKE_TOKEN = os.getenv("FAKE_TOKEN")
+
+# Get allowed origins from environment variable or use default
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,https://anchor-chat.vercel.app,https://anchor-chat-production.up.railway.app"
+).split(",")
+
+print("ALLOWED_ORIGINS", ALLOWED_ORIGINS)
+
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all for dev (can restrict later)
+    allow_origins=ALLOWED_ORIGINS,  # More secure CORS configuration
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Load secrets
-CORRECT_PASSWORD = os.getenv("CORRECT_PASSWORD")
-FAKE_TOKEN = os.getenv("FAKE_TOKEN")
 
 class LoginRequest(BaseModel):
     password: str
